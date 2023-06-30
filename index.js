@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const { randomInt } = require('crypto');
+const fs = require("fs");
+const path = require("path");
+const { randomInt } = require("crypto");
 
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -13,7 +13,7 @@ function shuffleArray(array) {
 function distributeFilesRandomly(directory) {
   fs.readdir(directory, (err, files) => {
     if (err) {
-      console.error('Hata:', err);
+      console.error("Hata:", err);
       return;
     }
 
@@ -22,7 +22,10 @@ function distributeFilesRandomly(directory) {
 
     shuffledFiles.forEach((file, index) => {
       const source = path.join(directory, file);
-      const randomFileName = `${randomInt(fileCount)}.mp4`;
+      let randomFileName = `${randomInt(100000)}_${file}`;
+      while (fs.existsSync(path.join(directory, randomFileName))) {
+        randomFileName = `${randomInt(fileCount)}_${file}`;
+      }
       const destination = path.join(directory, randomFileName);
 
       fs.rename(source, destination, (err) => {
@@ -36,5 +39,5 @@ function distributeFilesRandomly(directory) {
   });
 }
 
-const targetDirectory = 'D:/repos/twitchgetclipbytopthree/videolar/kvideo/30-06-2023';
+const targetDirectory = "D:/repos/twitchgetclipbytopthree/kvideo/30-06-2023";
 distributeFilesRandomly(targetDirectory);
