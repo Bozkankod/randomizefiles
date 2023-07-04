@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
 const { randomInt } = require("crypto");
 const readline = require("readline");
@@ -8,46 +8,40 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
+const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
 
-function distributeFilesRandomly(directory, randomRange) {
-  fs.readdir(directory, (err, files) => {
-    if (err) {
-      console.error("Hata:", err);
-      return;
-    }
-
-    const fileCount = files.length;
+const distributeFilesRandomly = async (directory, randomRange) => {
+  try {
+    const files = await fs.readdir(directory);
     const shuffledFiles = shuffleArray(files);
 
-    shuffledFiles.forEach((file, index) => {
+    for (const file of shuffledFiles) {
       const source = path.join(directory, file);
       let randomFileName = `${randomInt(randomRange)}_${file}`;
-      while (fs.existsSync(path.join(directory, randomFileName))) {
+      while (await fs.access(path.join(directory, randomFileName)).catch(() => null)) {
         randomFileName = `${randomInt(randomRange)}_${file}`;
       }
       const destination = path.join(directory, randomFileName);
 
-      fs.rename(source, destination, (err) => {
-        if (err) {
-          console.error(`Hata: ${file} dosyası taşınamadı.`, err);
-          return;
-        }
-        console.log(`${file} dosyası ${randomFileName} olarak güncellendi.`);
-      });
-    });
-  });
-}
+      await fs.rename(source, destination);
+      console.log(`${file} dosyası ${randomFileName} olarak güncellendi.`);
+    }
+  } catch (err) {
+    console.error("Hata:", err);
+  }
+};
 
-rl.question("Hedef dizini girin: ", (targetDirectory) => {
-  rl.question("Random aralığını girin: ", (randomRange) => {
-    distributeFilesRandomly(targetDirectory, parseInt(randomRange));
+const promptUser = async () => {
+  try {
+    const targetDirectory = await new Promise((resolve) => rl.question("Hedef dizini girin: ", resolve));
+    const randomRange = parseInt(await new Promise((resolve) => rl.question("Random aralığını girin: ", resolve)));
+
+    await distributeFilesRandomly(targetDirectory, randomRange);
+  } catch (err) {
+    console.error("Hata:", err);
+  } finally {
     rl.close();
-  });
-});
+  }
+};
+
+promptUser();
