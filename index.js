@@ -1,6 +1,12 @@
 const fs = require("fs");
 const path = require("path");
 const { randomInt } = require("crypto");
+const readline = require("readline");
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -10,7 +16,7 @@ function shuffleArray(array) {
   return array;
 }
 
-function distributeFilesRandomly(directory) {
+function distributeFilesRandomly(directory, randomRange) {
   fs.readdir(directory, (err, files) => {
     if (err) {
       console.error("Hata:", err);
@@ -22,9 +28,9 @@ function distributeFilesRandomly(directory) {
 
     shuffledFiles.forEach((file, index) => {
       const source = path.join(directory, file);
-      let randomFileName = `${randomInt(100000)}_${file}`;
+      let randomFileName = `${randomInt(randomRange)}_${file}`;
       while (fs.existsSync(path.join(directory, randomFileName))) {
-        randomFileName = `${randomInt(fileCount)}_${file}`;
+        randomFileName = `${randomInt(randomRange)}_${file}`;
       }
       const destination = path.join(directory, randomFileName);
 
@@ -39,5 +45,9 @@ function distributeFilesRandomly(directory) {
   });
 }
 
-const targetDirectory = "D:/repos/twitchgetclipbytopthree/kvideo/30-06-2023";
-distributeFilesRandomly(targetDirectory);
+rl.question("Hedef dizini girin: ", (targetDirectory) => {
+  rl.question("Random aralığını girin: ", (randomRange) => {
+    distributeFilesRandomly(targetDirectory, parseInt(randomRange));
+    rl.close();
+  });
+});
