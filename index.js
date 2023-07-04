@@ -34,7 +34,7 @@ const distributeFilesRandomly = async (directory, randomRange) => {
 const promptUser = async () => {
   try {
     const targetDirectory = await new Promise((resolve) => rl.question("Hedef dizini girin: ", resolve));
-    const randomRange = parseInt(await new Promise((resolve) => rl.question("Random aralığını girin: ", resolve)));
+    const randomRange = parseInt(await new Promise((resolve) => rl.question("Random aralığını girin (0-?): ", resolve)));
 
     await distributeFilesRandomly(targetDirectory, randomRange);
   } catch (err) {
